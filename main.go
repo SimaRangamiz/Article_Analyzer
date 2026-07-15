@@ -5,19 +5,6 @@ import "encoding/json"
 import "time"
 
 
-type Article_Request struct {
-	Title  string `json:"title"`   
-	Text   string `json:"text"`    
-	Top_Num int    `json:"top_num"` 
-}
-
-
-type Article_Response struct {
-	Title     string    `json:"title"`      
-	Tags      []string  `json:"tags"`       
-	Created_Time time.Time `json:"created_at"` 
-}
-
 func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		return
