@@ -1,15 +1,53 @@
 package main
 
-import "fmt"
+import "net/http"
+import "encoding/json"
+import "time"
+
+
+type Article_Request struct {
+	Title  string `json:"title"`   
+	Text   string `json:"text"`    
+	Top_Num int    `json:"top_num"` 
+}
+
+
+type Article_Response struct {
+	Title     string    `json:"title"`      
+	Tags      []string  `json:"tags"`       
+	Created_Time time.Time `json:"created_at"` 
+}
+
+func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		return
+	}
+
+	var request Article_Request
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, "JSON format error", http.StatusBadRequest)
+		return
+	}
+
+	top_tags := extract(request.Text, request.Top_Num)
+	
+	response := Article_Response{
+		Title:        request.Title, 
+		Tags:         top_tags,
+		Created_Time: time.Now(), 
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
 
 func main() {
-	
-	samplebody := "Artificial intelligence or ai is changing the world today. Many businesses use ai to automate tasks and improve efficiency. Because ai can learn from historical data, ai models become smarter over time. In healthcare, ai helps doctors diagnose diseases faster. Developers are now building new applications integrated with ai to solve complex problems every day."
 
-	top_tags := extract(samplebody, 3)
-
-	fmt.Println("\nTop Tags:")
-	for i := 0; i < len(top_tags); i++ {
-		fmt.Printf("%v. Tag: %v\n", i+1, top_tags[i])
+	http.HandleFunc("/analyze", Analyzer_Request)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil{
+		return
 	}
 }
