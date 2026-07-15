@@ -16,10 +16,6 @@ func extract(body string, top_num int) []string {
 		word := words[i]
 		
 		if len(word) > 1{
-			// if word == "is" || word == "while" || word == "the" || word == "is" || word =="am" || word =="are" || word =="at"||word =="in" || word =="to" || word =="for" || word =="and"{
-			// 	continue
-			// }
-
 			counts[word] = counts[word] + 1
 		}
 	}
@@ -31,7 +27,7 @@ func extract(body string, top_num int) []string {
 		best_word := ""
 
 		for word, count := range counts {
-			if count > max_count {
+			if count > max_count || (count == max_count && (best_word == "" || word < best_word)) {
 				max_count = count
 				best_word = word
 			}
