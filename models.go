@@ -1,5 +1,9 @@
 package main
 
+import ("time"
+        "go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type Article_Request struct {
 	Title  string `json:"title"`   
 	Text   string `json:"text"`    
@@ -17,5 +21,5 @@ type Article struct {
 	Title     string             `bson:"title" json:"title"`
 	Body      string             `bson:"body" json:"body"`  
 	Tags      []string           `bson:"tags" json:"tags"`  
-	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+	Created_Time time.Time       `bson:"created_at" json:"created_at"`
 }
