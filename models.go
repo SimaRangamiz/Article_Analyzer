@@ -4,11 +4,6 @@ import ("time"
         "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Article_Request struct {
-	Title  string `json:"title"`   
-	Text   string `json:"text"`    
-	Top_Num int    `json:"top_num"` 
-}
 
 type Article_Response struct {
 	Title     string    `json:"title"`      
