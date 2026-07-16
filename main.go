@@ -1,9 +1,10 @@
 package main
 
-import "net/http"
-import "encoding/json"
-import "time"
-
+import ("net/http"
+        "encoding/json"
+		"time"
+		"context"	
+)
 
 func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -20,10 +21,26 @@ func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 
 	top_tags := extract(request.Text, request.Top_Num)
 	
+	New_Article := Article{
+		Title:     request.Title,
+		Body:      request.Text,
+		Tags:      top_tags,
+		Created_Time: time.Now(),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = DB.InsertOne(ctx, New_Article)
+	if err != nil {
+		http.Error(w, "Failed to save to database: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	response := Article_Response{
-		Title:        request.Title, 
-		Tags:         top_tags,
-		Created_Time: time.Now(), 
+			Title:        request.Title, 
+			Tags:         top_tags,
+			Created_Time: New_Article.Created_Time, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -32,8 +49,10 @@ func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	Connect_DB()
+
 	http.HandleFunc("/analyze", Analyzer_Request)
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8085", nil)
 	if err != nil{
 		return
 	}
