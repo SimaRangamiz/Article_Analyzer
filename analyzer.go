@@ -1,7 +1,8 @@
 package main
 
-import "strings"
-import "github.com/bbalet/stopwords"
+import ("strings"
+        "github.com/bbalet/stopwords"
+)
 
 func extract(body string, top_num int) []string {
 	lowerbody := strings.ToLower(body)
