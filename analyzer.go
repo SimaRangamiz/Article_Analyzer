@@ -4,13 +4,13 @@ import ("strings"
         "github.com/bbalet/stopwords"
 )
 
-func extract(body string, top_num int) []string {
-	lowerbody := strings.ToLower(body)
-	cleanedtext := stopwords.CleanString(lowerbody, "en", false)
+func extract(body string, topNum int) []string {
+	lowerBody := strings.ToLower(body)
+	cleanedText := stopwords.CleanString(lowerBody, "en", false)
 	replacer := strings.NewReplacer(".", "", ",", "", "!", "", "?", "")
-	cleanbody := replacer.Replace(cleanedtext)
+	cleanBody := replacer.Replace(cleanedText)
 
-	words := strings.Fields(cleanbody)
+	words := strings.Fields(cleanBody)
 
 	counts := make(map[string]int)
 	for i := 0; i < len(words); i++{
@@ -23,19 +23,19 @@ func extract(body string, top_num int) []string {
 
 	var tags []string
 
-	for i := 0; i < top_num; i++{
-		max_count := 0
-		best_word := ""
+	for i := 0; i < topNum; i++{
+		maxCount := 0
+		bestWord := ""
 
 		for word, count := range counts {
-			if count > max_count || (count == max_count && (best_word == "" || word < best_word)) {
-				max_count = count
-				best_word = word
+			if count > maxCount || (count == maxCount && (bestWord == "" || word < bestWord)) {
+				maxCount = count
+				bestWord = word
 			}
 		}
-		if best_word != "" {
-			tags = append(tags, best_word)
-			delete(counts, best_word)
+		if bestWord != "" {
+			tags = append(tags, bestWord)
+			delete(counts, bestWord)
 		}
 	}
 
