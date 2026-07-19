@@ -5,10 +5,10 @@ import ("time"
 )
 
 
-type Article_Response struct {
+type ArticleResponse struct {
 	Title     string    `json:"title"`      
 	Tags      []string  `json:"tags"`       
-	Created_Time time.Time `json:"created_at"` 
+	CreatedTime time.Time `json:"created_at"` 
 }
 
 type Article struct {
@@ -16,5 +16,5 @@ type Article struct {
 	Title     string             `bson:"title" json:"title"`
 	Body      string             `bson:"body" json:"body"`  
 	Tags      []string           `bson:"tags" json:"tags"`  
-	Created_Time time.Time       `bson:"created_at" json:"created_at"`
+	CreatedTime time.Time       `bson:"created_at" json:"created_at"`
 }
