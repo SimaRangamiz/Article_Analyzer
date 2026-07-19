@@ -3,13 +3,10 @@ package main
 import ("net/http"
         "encoding/json"
 		"time"
-		"context"
-		"strings"
 		"strconv"
-		"bufio"
 )
 
-func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
+func AnalyzerRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		return
 	}
@@ -27,68 +24,40 @@ func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	top_num_Str := r.FormValue("top_num")
-	top_num := 5 
-	if top_num_Str != "" {
-		parsed_num, err := strconv.Atoi(top_num_Str)
-		if err == nil && parsed_num > 0 {
-			top_num = parsed_num 
+	topNumStr := r.FormValue("topNum")
+	topNum := 5 
+	if topNumStr != "" {
+		parsedNum, err := strconv.Atoi(topNumStr)
+		if err == nil && parsedNum > 0 {
+			topNum = parsedNum 
 		}
 	}
 
-	var title string
-	var body_text []string
-	scanner := bufio.NewScanner(file)
-	First_Line := true
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		
-		if First_Line {
-			if line != "" {
-				title = line
-				First_Line = false
-			}
-			continue
-		}
-		
-		body_text = append(body_text, line)
-	}
-
-	if err := scanner.Err(); err != nil {
-		http.Error(w, "Error reading", http.StatusInternalServerError)
+	title, body, err := ParseArticle(file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	body := strings.Join(body_text, "\n")
-
-	if title == "" || strings.TrimSpace(body) == "" {
-		http.Error(w, "Invalid file structure", http.StatusBadRequest)
-		return
-	}
-
-	top_tags := extract(body, top_num)
+	topTags := extract(body, topNum)
 	
-	New_Article := Article{
+	NewArticle := Article{
 		Title:     title,
 		Body:      body,
-		Tags:      top_tags,
-		Created_Time: time.Now(),
+		Tags:      topTags,
+		CreatedTime: time.Now(),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err = DB.InsertOne(ctx, New_Article)
+	err = SaveArticle(NewArticle)
 	if err != nil {
-		http.Error(w, "Failed to save to DB: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to save to DB", http.StatusInternalServerError)
 		return
 	}
 
-	response := Article_Response{
+	response := ArticleResponse{
 			Title:        title, 
-			Tags:         top_tags,
-			Created_Time: New_Article.Created_Time, 
+			Tags:         topTags,
+			CreatedTime: NewArticle.CreatedTime, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -98,9 +67,9 @@ func Analyzer_Request(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	Connect_DB()
+	ConnectDB()
 
-	http.HandleFunc("/analyze", Analyzer_Request)
+	http.HandleFunc("/analyze", AnalyzerRequest)
 	err := http.ListenAndServe(":8085", nil)
 	if err != nil{
 		return
